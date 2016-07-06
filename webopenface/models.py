@@ -1,13 +1,16 @@
 from __future__ import unicode_literals
 
+import datetime
+
 from django.db import models
+from django.utils import timezone
 
 
 class Person(models.Model):
-    uid = models.CharField(max_length=50, )
+    uid = models.CharField(max_length=50, blank=True)
     name = models.CharField(max_length=50, )
-    add_date = models.DateTimeField(auto_now_add=False, )
-    mod_date = models.DateTimeField(auto_now=False, )
+    add_date = models.DateTimeField(auto_now_add=True, )
+    mod_date = models.DateTimeField(auto_now=True, )
 
     class Meta:
         verbose_name_plural = "people"
@@ -30,6 +33,9 @@ class Frame(models.Model):
 
     def __unicode__(self):
         return self.frame
+
+    def was_published_recently(self):
+        return self.add_date >= timezone.now() - datetime.timedelta(days= 10)#(minutes=0.5)
 
 
 class DetectedFace(models.Model):
