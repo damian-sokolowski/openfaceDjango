@@ -1,0 +1,26 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'webopenface/css/bootstrap.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'webopenface/css/bootstrap-dialog.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'webopenface/css/bootstrap-toggle.min.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'webopenface/css/style.css' %}" />
+<script src="{% static 'webopenface/js/jquery-3.0.0.min.js' %}"></script>
+<script src="{% static 'webopenface/js/bootstrap-toggle.min.js' %}"></script>
+<script src="{% static 'webopenface/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'webopenface/js/bootstrap-dialog.min.js' %}"></script>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/openface">Camera</a></li>
+                <li><a href="/openface/preview">Preview</a></li>
+                <li><a href="/openface/person">Person</a></li>
+                <li><a href="/openface/lastframes">Last frames</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{% block content %}{% endblock%}
+
+{% block staticFile %}{% endblock %}
