@@ -8,7 +8,7 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ('name', 'uid', 'mod_date')
     fieldsets = [
         (None,               {'fields': ['uid', 'name']}),
-        ('Date information', {'fields': ['add_date', 'mod_date']}),
+        # ('Date information', {'fields': ['add_date', 'mod_date']}),
     ]
 
 
@@ -25,8 +25,12 @@ class FrameAdmin(admin.ModelAdmin):
     list_filter = ['add_date']
     list_display = ('frame', 'add_date')
 
+
+class DetectedFaceAdmin(admin.ModelAdmin):
+    list_display = ('face', 'frame')
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(PeopleFace, PeopleFaceAdmin)
 admin.site.register(DetectedPeople, DetectedPeopleAdmin)
-admin.site.register(DetectedFace)
+admin.site.register(DetectedFace, DetectedFaceAdmin)
 admin.site.register(Frame, FrameAdmin)
