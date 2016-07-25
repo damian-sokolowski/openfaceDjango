@@ -1,10 +1,9 @@
 from __future__ import unicode_literals
-
 from django.db import models
 
 
 class Person(models.Model):
-    uid = models.CharField(max_length=50, )
+    uid = models.CharField(max_length=50, blank=True)
     name = models.CharField(max_length=50, )
     add_date = models.DateTimeField(auto_now_add=False, )
     mod_date = models.DateTimeField(auto_now=False, )
