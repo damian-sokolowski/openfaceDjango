@@ -5,8 +5,8 @@ from django.db import models
 class Person(models.Model):
     uid = models.CharField(max_length=50, blank=True)
     name = models.CharField(max_length=50, )
-    add_date = models.DateTimeField(auto_now_add=False, )
-    mod_date = models.DateTimeField(auto_now=False, )
+    add_date = models.DateTimeField(auto_now_add=True, )
+    mod_date = models.DateTimeField(auto_now=True, )
 
     class Meta:
         verbose_name_plural = "people"
@@ -25,7 +25,7 @@ class PeopleFace(models.Model):
 
 class Frame(models.Model):
     frame = models.TextField()
-    add_date = models.DateTimeField(auto_now_add=False, )
+    add_date = models.DateTimeField(auto_now_add=True, )
 
     def __unicode__(self):
         return self.frame
