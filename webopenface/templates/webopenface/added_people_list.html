@@ -1,0 +1,12 @@
+<div id="addedPeople">
+    <h2>Added people</h2>
+    {% if added_people %}
+        <ul>
+        {% for el in added_people %}
+            <li>{{ el }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No people.</p>
+    {% endif %}
+</div>
