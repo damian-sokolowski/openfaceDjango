@@ -1,0 +1,39 @@
+{% extends 'webopenface/base.html' %}
+{% block content %}
+    <div class="container">
+        <h2 id="lf-head">Last frame</h2>
+        {% if frames %}
+            <table id="table" class="display">
+                <thead>
+                    <th> </th>
+                    <th>PK</th>
+                    <th>Frame</th>
+                    <th>Number of people</th>
+                    <th>Added date</th>
+                </thead>
+                <tbody>
+                    {% for el in frames %}
+
+                        <tr>
+                            <td> {{ forloop.counter }}</td>
+                            <td class="pk">{{ el.id }}</td>
+                            <td><img src="{{ el.frame }}"></td>
+                            <td>{{ el.detectedface_set.count }}</td>
+                            <td>{{ el.add_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No frames.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+
+{% block staticFile %}
+    {% load staticfiles %}
+    <script src="{% static 'webopenface/js/last-frames.js' %}"></script>
+    <script src="{% static 'webopenface/js/jquery.dataTables.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'webopenface/css/jquery.dataTables.min.css' %}" />
+{% endblock %}

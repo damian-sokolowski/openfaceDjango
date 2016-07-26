@@ -37,15 +37,40 @@ body {
     display: none;
 }
 
+#addedPeople {
+    text-align: left;
+    position: absolute;
+    display: none;
+}
+
 #detectedPeople {
     top: 0px;
     right: 0px;
     position: absolute;
 }
 
-#detectedPeople ul {
+#addedPeople ul, #detectedPeople ul {
     height: 400px;
     padding-right: 10px;
     overflow-y: scroll;
     white-space: nowrap;
+}
+
+#table tbody tr {
+    cursor:pointer;
+}
+
+#table img {
+    height: 100px;
+}
+
+#lf-head, #dp-head {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.personImage img {
+    height: 100px;
+    float: left;
 }
