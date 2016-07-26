@@ -1,0 +1,51 @@
+body {
+    padding-top: 70px;
+}
+
+.container {
+    position: relative;
+}
+.container .header {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.container .header #videoel{
+    border: 1px solid rgba(53, 59, 62, 0.89);
+}
+
+.content.center {
+    position: relative;
+    text-align: center;
+    width: 400px;
+    margin: 0 auto;
+}
+
+.center > #peopleInfo {
+    margin-top: 20px;
+    text-align: left;
+}
+
+#progress_bar {
+    width: 400px;
+    margin: 10px auto;
+}
+
+#mainPage #videoel {
+    width: 1282px !important;
+    height: auto !important;
+    display: none;
+}
+
+#detectedPeople {
+    top: 0px;
+    right: 0px;
+    position: absolute;
+}
+
+#detectedPeople ul {
+    height: 400px;
+    padding-right: 10px;
+    overflow-y: scroll;
+    white-space: nowrap;
+}

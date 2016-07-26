@@ -1,0 +1,20 @@
+{% extends 'webopenface/base.html' %}
+
+{% block content %}
+    <div class="container" id="mainPage">
+        <div class="header col-sm-8">
+            {% include 'webopenface/video-src.html' %}
+
+            {% include 'webopenface/video-result.html' %}
+
+        {% include 'webopenface/add-perosn.html' %}
+        </div>
+
+        {% include 'webopenface/detected.html' %}
+    </div>
+{% endblock %}
+
+{% block staticFile %}
+    {% load staticfiles %}
+    <script src="{% static 'webopenface/js/main.js' %}"></script>
+{% endblock %}
