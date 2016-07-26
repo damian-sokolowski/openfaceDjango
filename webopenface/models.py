@@ -1,5 +1,8 @@
 from __future__ import unicode_literals
 from django.db import models
+from django.utils import timezone
+
+import datetime
 
 
 class Person(models.Model):
@@ -29,6 +32,9 @@ class Frame(models.Model):
 
     def __unicode__(self):
         return self.frame
+
+    def was_published_recently(self):
+        return self.add_date >= timezone.now() - datetime.timedelta(minutes=0.5)
 
 
 class DetectedFace(models.Model):
