@@ -1,6 +1,7 @@
 from PIL import Image
 from sklearn.grid_search import GridSearchCV
 from sklearn.svm import SVC
+from threading import Lock
 from webopenface.models import Person, DetectedPeople, PeopleFace, Frame, DetectedFace
 
 import argparse
@@ -35,6 +36,8 @@ args = parser.parse_known_args()
 align = openface.AlignDlib(args[0].dlibFacePredictor)
 net = openface.TorchNeuralNet(args[0].networkModel, imgDim=args[0].imgDim,
                               cuda=args[0].cuda)
+
+lock = Lock()
 
 
 class Face:
@@ -162,7 +165,11 @@ class OpenFaceClass:
             if phash in self.images:
                 identity = self.images[phash].identity
             else:
-                rep = net.forward(alignedFace)
+                lock.acquire()
+                try:
+                    rep = net.forward(alignedFace)
+                finally:
+                    lock.release()
                 # print(rep)
                 img = Image.fromarray(alignedFace, 'RGB')
                 imgF = StringIO.StringIO()
