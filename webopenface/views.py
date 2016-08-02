@@ -41,7 +41,7 @@ def detected_people(request, pk):
         request,
         'webopenface/detected_people.html',
         {
-            'detected': Frame.objects.get(pk=pk).detectedface_set[:1000]
+            'detected': Frame.objects.get(pk=pk).detectedface_set.all()
         }
     )
 
