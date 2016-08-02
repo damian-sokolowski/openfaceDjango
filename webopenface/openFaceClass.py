@@ -10,6 +10,7 @@ import cv2
 import imagehash
 import numpy as np
 import openface
+import operator
 import os
 import StringIO
 
@@ -59,6 +60,7 @@ class OpenFaceClass:
         self.images = {}
         self.people = []
         self.svm = None
+        self.fit = []
         if args[0].unknown:
             self.unknownImgs = np.load("./examples/web/unknown.npy")
 
@@ -125,11 +127,32 @@ class OpenFaceClass:
                  'gamma': [0.001, 0.0001],
                  'kernel': ['rbf']}
             ]
-            self.svm = GridSearchCV(SVC(C=1), param_grid, cv=5).fit(X, y)
+            self.svm = GridSearchCV(SVC(C=1, probability=True), param_grid, cv=5).fit(X, y)
+
+    def findMatching(self, matrix):
+        for image_id in dict(matrix):
+            image = matrix[image_id]
+            user_id = max(image.iteritems(), key=operator.itemgetter(1))[0]
+            is_greatest = True
+            for j in matrix:
+                next_image = matrix[j]
+                if next_image[user_id] > image[user_id]:
+                    is_greatest = False
+                    break
+
+            if is_greatest:
+                self.fit.append((image_id, user_id, image[user_id]))
+                del matrix[image_id]
+                for img_id in dict(matrix):
+                    del matrix[img_id][user_id]
+        if matrix:
+            self.findMatching(matrix)
 
     def processFrame(self, dataURL, identity, training, loadingData=False):
         msg = {}
-        detected_people = {}
+        detected_faces = {}
+        recognized_people = {}
+        proba = {}
 
         head = "data:image/jpeg;base64,"
         assert(dataURL.startswith(head))
@@ -149,11 +172,13 @@ class OpenFaceClass:
             annotatedFrame = np.copy(buf)
 
         identities = []
+        self.fit = []
+
         bbs = align.getAllFaceBoundingBoxes(rgbFrame)
         bbs = bbs if len(bbs) > 0 else []
         # bb = align.getLargestFaceBoundingBox(rgbFrame)
         # bbs = [bb] if bb is not None else []
-        for bb in bbs:
+        for key, bb in enumerate(bbs):
             landmarks = align.findLandmarks(rgbFrame, bb)
             alignedFace = align.align(args[0].imgDim, rgbFrame, bb,
                                       landmarks=landmarks,
@@ -193,20 +218,28 @@ class OpenFaceClass:
                         "representation": rep.tolist()
                     }
                 else:
+                    detected_faces[key] = base_image
                     if len(self.people) == 0:
-                        identity = -1
+                        self.fit.append((key, -1, 0))
                     elif len(self.people) == 1:
-                        identity = 0
+                        self.fit.append((key, 0, 0))
                     elif self.svm:
-                        identity = self.svm.predict(rep)[0]
-                        detected_people[self.people[identity]] = base_image
+                        proba[key] = {y: v for ((x, y), v) in np.ndenumerate(self.svm.predict_proba(rep))}
                     else:
                         print("hhh")
-                        identity = -1
-                    if identity not in identities:
-                        identities.append(identity)
+                        self.fit.append((key, -1, 0))
 
-            if not training:
+        if not training:
+            self.findMatching(proba)
+            for key, value in enumerate(self.fit):
+                image_id = value[0]
+                bb = bbs[image_id]
+                identity = value[1]
+                person_id = self.people[identity]
+                identities.append(Person.objects.get(pk=person_id).name+' - '+str(int(value[2]*100))+'%')
+                recognized_people[person_id] = detected_faces[image_id]
+
+
                 bl = (bb.left(), bb.bottom())
                 tr = (bb.right(), bb.top())
                 cv2.rectangle(annotatedFrame, bl, tr, color=(153, 255, 204),
@@ -224,7 +257,7 @@ class OpenFaceClass:
                 cv2.putText(annotatedFrame, name, (bb.left(), bb.top() - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75,
                             color=(152, 255, 204), thickness=2)
-        if not training:
+
             msg["IDENTITIES"] = {
                 "identities": identities
             }
@@ -238,10 +271,10 @@ class OpenFaceClass:
             msg["ANNOTATED"] = {
                 "content": content
             }
-            if detected_people:
+            if recognized_people:
                 fr = Frame(frame=content)
-                fr.save()
-                for key, value in detected_people.iteritems():
+                fr.save_delete()
+                for key, value in recognized_people.iteritems():
                     df = DetectedFace(frame=fr, face=value)
                     df.save()
                     dp = DetectedPeople(face=df, person_id=key)
