@@ -34,6 +34,9 @@ function getDataURLFromRGB(rgb) {
 }
 
 function sendFrameLoop() {
+    if (typeof personSite !== 'undefined' && !$("#trainingChk").prop('checked')) {
+        return;
+    }
     if (vidReady) {
         var canvas = document.createElement('canvas');
         canvas.width = vid.width;
@@ -54,9 +57,6 @@ function sendFrameLoop() {
             }),
 
             success: function (json) {
-				if (typeof personSite !== 'undefined' && !$("#trainingChk").prop('checked')) {
-					return;
-				}
 
                 if(json['ANNOTATED']){
                     $("#detectedFaces").html(
@@ -84,11 +84,11 @@ function sendFrameLoop() {
                     detected_people.html("Last updated: " + (new Date()).toTimeString());
                     if (identities.length > 0) {
                         $.each(identities, function(index, value){
-                            list.append("<li>"+((value != -1) ? people[value] : "Unknown")+"</li>")
+                            list.append("<li>"+value+"</li>")
                         });
                         detected_people.append(list)
                     } else {
-                        detected_people.append("Nobody detected.");
+                        detected_people.append("<p>Nobody detected.</p>");
                     }
                 }
                 getPeopleInfoHtml()
@@ -104,41 +104,45 @@ function sendFrameLoop() {
 }
 
 function getPeopleInfoHtml() {
-    var info = {'-1': 0};
-    $.each(people, function(index, value) {
-        info[index] = 0;
-    });
-    var len = images.length;
-    for (var i = 0; i < len; i++) {
-        info[images[i].identity] += 1;
-    }
-
-    var valueMax = $('#progress_bar div').attr('aria-valuemax')
-    $('#progress_bar div').width((info[defaultPerson]/valueMax*100)+'%');
-    $('#progress_bar span').text(info[defaultPerson]+'/'+valueMax);
-
-    var list = $("<ul></ul>");
-    $.each(people, function(index, value){
-        list.append("<li><b>"+people[index]+":</b> "+info[index]+"</li>")
-    });
-
-    $('#peopleInfo').html(list)
-    if (info[defaultPerson] >= valueMax && $("#trainingChk").prop('checked')) {
-        $("#trainingChk").bootstrapToggle('off');
-        $('#addPersonTxt').prop('readonly', false).val("");
-        $('#addPersonBtn').prop('disabled', false);
-        $.ajax({
-            url: "/openface/api/onmessage/",
-            type : "POST",
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            data: JSON.stringify({type: 'TRAIN_SVM'}),
-            success: function (json) {
-                console.log('TRAIN_SVM');
-            },
-            error: function (json) {
-            }
+    if ($("#trainingChk").prop('checked')){
+        var info = {'-1': 0};
+        $.each(people, function(index, value) {
+            info[index] = 0;
         });
+        var len = images.length;
+        for (var i = 0; i < len; i++) {
+            info[images[i].identity] += 1;
+        }
+
+        var valueMax = $('#progress_bar div').attr('aria-valuemax')
+        $('#progress_bar div').width((info[defaultPerson]/valueMax*100)+'%');
+        $('#progress_bar span').text(info[defaultPerson]+'/'+valueMax);
+
+        var list = $("<ul></ul>");
+        $.each(people, function(index, value){
+            list.append("<li><b>"+people[index]+":</b> "+info[index]+"</li>")
+        });
+        $('#peopleInfo').html(list);
+
+        if (info[defaultPerson] >= valueMax && $("#trainingChk").prop('checked')) {
+            $("#trainingChk").bootstrapToggle('off');
+            $('#addPersonTxt').prop('readonly', false).val("");
+            $('#addPersonBtn').prop('disabled', false);
+            $('#progress_bar div').width('0%');
+            $('#progress_bar span').text('0/'+valueMax);
+            $.ajax({
+                url: "/openface/api/onmessage/",
+                type : "POST",
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                data: JSON.stringify({type: 'TRAIN_SVM'}),
+                success: function (json) {
+                    console.log('TRAIN_SVM');
+                },
+                error: function (json) {
+                }
+            });
+        }
     }
 }
 
@@ -149,30 +153,7 @@ function camSuccess(stream){
     sendFrameLoop();
 }
 
-//function trainingChkCallback() {
-//    sendFrameLoop();
-//    //$.ajax({
-//    //    url : "/openface/api/onmessage/",
-//    //    type : "POST",
-//    //    data : {
-//		//	type: 'TRAINING',
-//		//	val: $("#trainingChk").prop('checked')
-//		//},
-//    //
-//    //    success : function(json) {
-//    //        console.log('trai');
-//    //        console.log($("#trainingChk").prop('checked'));
-//		//	sendFrameLoop();
-//    //    },
-//    //
-//    //    error : function(xhr,errmsg,err) {
-//		//	console.log('error training');
-//    //    }
-//    //});
-//}
-
 function addPerson(){
-    //console.log('click');
     var newPerson = $("#addPersonTxt").val();
     if (newPerson != '') {
         $.ajax({
@@ -186,19 +167,16 @@ function addPerson(){
             }),
 
             success: function (json) {
-                //console.log('yea');
                 defaultPerson = null;
                 if (json.hasOwnProperty('id')) {
                     $('#addPersonTxt').prop('readonly', true);
                     $('#addPersonBtn').prop('disabled', true);
-                    $("#trainingChk").bootstrapToggle('on')
-                            console.log(json['id']);
+                    $("#trainingChk").bootstrapToggle('on');
                     defaultPerson = json['id'];
-                    people[defaultPerson] = newPerson;;
+                    people[defaultPerson] = newPerson;
 
                     if (typeof personSite !== 'undefined') {
-                        trainingChkCallback()
-                        console.log('personSite');
+                        sendFrameLoop();
                     }
                 }
             },
@@ -224,5 +202,4 @@ $(document).ready(function(){
     }
 
 	$("#addPersonBtn").click(addPerson);
-    //$("#trainingChk").change(trainingChkCallback);
 });
