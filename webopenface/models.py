@@ -36,6 +36,12 @@ class Frame(models.Model):
     def was_published_recently(self):
         return self.add_date >= timezone.now() - datetime.timedelta(minutes=0.5)
 
+    def save_delete(self):
+        objects = Frame.objects.all()
+        if objects.count() >= 2000:
+            Frame.objects.filter(id__in=objects[:200]).delete()
+        self.save()
+
 
 class DetectedFace(models.Model):
     frame = models.ForeignKey(Frame)
