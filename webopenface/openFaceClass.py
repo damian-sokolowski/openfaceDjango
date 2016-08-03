@@ -236,7 +236,8 @@ class OpenFaceClass:
                 bb = bbs[image_id]
                 identity = value[1]
                 person_id = self.people[identity]
-                identities.append(Person.objects.get(pk=person_id).name+' - '+str(int(value[2]*100))+'%')
+                probability = int(value[2]*100)
+                identities.append(Person.objects.get(pk=person_id).name+' - '+str(probability)+'%')
                 recognized_people[person_id] = detected_faces[image_id]
 
 
@@ -277,6 +278,6 @@ class OpenFaceClass:
                 for key, value in recognized_people.iteritems():
                     df = DetectedFace(frame=fr, face=value)
                     df.save()
-                    dp = DetectedPeople(face=df, person_id=key)
+                    dp = DetectedPeople(face=df, person_id=key, probability=probability)
                     dp.save()
         return msg

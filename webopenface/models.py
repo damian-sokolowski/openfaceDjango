@@ -54,6 +54,7 @@ class DetectedFace(models.Model):
 class DetectedPeople(models.Model):
     face = models.ForeignKey(DetectedFace, )
     person = models.ForeignKey(Person, )
+    probability = models.SmallIntegerField(default=0)
 
     def __unicode__(self):
         return self.person.name

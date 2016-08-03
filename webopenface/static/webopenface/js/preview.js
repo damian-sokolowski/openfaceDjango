@@ -16,14 +16,13 @@ function getFrameLoop() {
                         "<img src='" + json['dataURL'] + "' width='430px'>"
                     );
                     $.each(json['detectedPeople'], function(index, value){
-                        list.append('<li>'+value+'</li>')
+                        list.append('<li>'+value[0]+' - '+value[1]+'</li>')
                     });
                     $('#detectedPeople div').html(list)
 
                 } else {
-                    if (json['publishedRecently']) {
-                        $('#detectedPeople div').html('<p>No camera.</p>')
-                    }
+                    $("#detectedFaces").html('');
+                    $('#detectedPeople div').html('<p>No camera.</p>')
                 }
                 getFrameLoop()
             },

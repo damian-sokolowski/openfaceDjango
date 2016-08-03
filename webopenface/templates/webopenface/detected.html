@@ -5,7 +5,7 @@
             <ul>
             {% for face in latest_frame.detectedface_set.all %}
                 {% for detected_person in face.detectedpeople_set.all %}
-                    <li>{{ detected_person }}</li>
+                    <li>{{ detected_person.person }} - {{ detected_person.probability }}</li>
                 {% endfor %}
             {% endfor %}
             </ul>

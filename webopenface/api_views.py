@@ -34,7 +34,7 @@ def on_message(request):
             published_recently = latest_frame.was_published_recently()
             for face in latest_frame.detectedface_set.all():
                 for detected_person in face.detectedpeople_set.all():
-                    detected_people.append(detected_person.person.name)
+                    detected_people.append([detected_person.person.name, detected_person.probability])
             respons_data['type'] = "PREVIEW_FRAME"
             respons_data['dataURL'] = latest_frame.frame
             respons_data['publishedRecently'] = published_recently
