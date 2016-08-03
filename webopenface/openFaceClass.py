@@ -131,17 +131,21 @@ class OpenFaceClass:
 
     def findMatching(self, matrix):
         for image_id in dict(matrix):
-            image = matrix[image_id]
-            user_id = max(image.iteritems(), key=operator.itemgetter(1))[0]
+            users_proba = matrix[image_id]
+            user_id = max(users_proba.iteritems(), key=operator.itemgetter(1))[0]
             is_greatest = True
+            if users_proba[user_id] < 0.4:
+                self.fit.append((image_id, -1, users_proba[user_id]))
+                del matrix[image_id]
+                continue
             for j in matrix:
-                next_image = matrix[j]
-                if next_image[user_id] > image[user_id]:
+                next_users_proba = matrix[j]
+                if next_users_proba[user_id] > users_proba[user_id]:
                     is_greatest = False
                     break
 
             if is_greatest:
-                self.fit.append((image_id, user_id, image[user_id]))
+                self.fit.append((image_id, user_id, users_proba[user_id]))
                 del matrix[image_id]
                 for img_id in dict(matrix):
                     del matrix[img_id][user_id]
