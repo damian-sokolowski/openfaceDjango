@@ -1,5 +1,4 @@
 function getFrameLoop() {
-    console.log('img');
     $.ajax({
             url: "/openface/api/onmessage/",
             type : "POST",
@@ -29,6 +28,7 @@ function getFrameLoop() {
 
             error: function (xhr, errmsg, err) {
                 console.log('error GET_FRAME');
+                getFrameLoop()
             }
         });
 }

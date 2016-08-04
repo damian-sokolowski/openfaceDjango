@@ -189,6 +189,10 @@ function addPerson(){
 }
 
 $(document).ready(function(){
+    if ( $('#mainPage').exists()) {
+        vid.width = 1282;
+        vid.height = 962;
+    }
     if ( !$('#previewPage').exists()) {
         if (navigator.getUserMedia) {
             navigator.getUserMedia({video: true}, camSuccess,

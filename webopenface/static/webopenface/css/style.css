@@ -32,8 +32,6 @@ body {
 }
 
 #mainPage #videoel {
-    width: 1282px !important;
-    height: auto !important;
     display: none;
 }
 
