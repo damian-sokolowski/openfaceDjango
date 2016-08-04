@@ -53,7 +53,7 @@ class DetectedFace(models.Model):
 
 class DetectedPeople(models.Model):
     face = models.ForeignKey(DetectedFace, )
-    person = models.ForeignKey(Person, )
+    person = models.ForeignKey(Person, null=True)
     probability = models.SmallIntegerField(default=0)
 
     def __unicode__(self):
