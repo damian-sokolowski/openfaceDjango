@@ -235,15 +235,11 @@ class OpenFaceClass:
 
         if not training:
             self.findMatching(proba)
+            unknown_id =0
             for key, value in enumerate(self.fit):
                 image_id = value[0]
                 bb = bbs[image_id]
                 identity = value[1]
-                person_id = self.people[identity]
-                probability = int(value[2]*100)
-                identities.append(Person.objects.get(pk=person_id).name+' - '+str(probability)+'%')
-                recognized_people[person_id] = detected_faces[image_id]
-
 
                 bl = (bb.left(), bb.bottom())
                 tr = (bb.right(), bb.top())
@@ -263,6 +259,15 @@ class OpenFaceClass:
                             cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75,
                             color=(152, 255, 204), thickness=2)
 
+                probability = int(value[2]*100)
+                identities.append(name+' - '+str(probability)+'%')
+                if -1 == identity:
+                    recognized_key = 'unknown'+str(unknown_id)
+                    unknown_id = unknown_id+1
+                else:
+                    recognized_key = self.people[identity]
+                recognized_people[recognized_key] = detected_faces[image_id]
+
             msg["IDENTITIES"] = {
                 "identities": identities
             }
@@ -280,8 +285,9 @@ class OpenFaceClass:
                 fr = Frame(frame=content)
                 fr.save_delete()
                 for key, value in recognized_people.iteritems():
+                    person_id = key if isinstance(key, int) else None
                     df = DetectedFace(frame=fr, face=value)
                     df.save()
-                    dp = DetectedPeople(face=df, person_id=key, probability=probability)
+                    dp = DetectedPeople(face=df, person_id=person_id, probability=probability)
                     dp.save()
         return msg
