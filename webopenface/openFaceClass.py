@@ -235,19 +235,19 @@ class OpenFaceClass:
 
         if not training:
             self.findMatching(proba)
-            unknown_id =0
+            unknown_id = 0
             for key, value in enumerate(self.fit):
                 image_id = value[0]
                 bb = bbs[image_id]
                 identity = value[1]
 
-                bl = (bb.left(), bb.bottom())
-                tr = (bb.right(), bb.top())
-                cv2.rectangle(annotatedFrame, bl, tr, color=(153, 255, 204),
-                              thickness=3)
-                for p in openface.AlignDlib.OUTER_EYES_AND_NOSE:
-                    cv2.circle(annotatedFrame, center=landmarks[p], radius=3,
-                               color=(102, 204, 255), thickness=-1)
+                # bl = (bb.left(), bb.bottom())
+                # tr = (bb.right(), bb.top())
+                # cv2.rectangle(annotatedFrame, bl, tr, color=(153, 255, 204),
+                #               thickness=3)
+                # for p in openface.AlignDlib.OUTER_EYES_AND_NOSE:
+                #     cv2.circle(annotatedFrame, center=landmarks[p], radius=3,
+                #                color=(102, 204, 255), thickness=-1)
                 if identity == -1:
                     if len(self.people) == 1:
                         name = Person.objects.get(pk=self.people[0]).name
@@ -256,14 +256,14 @@ class OpenFaceClass:
                 else:
                     name = Person.objects.get(pk=self.people[identity]).name
                 cv2.putText(annotatedFrame, name, (bb.left(), bb.top() - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.75,
+                            cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.75,
                             color=(152, 255, 204), thickness=2)
 
                 probability = int(value[2]*100)
                 identities.append(name+' - '+str(probability)+'%')
                 if -1 == identity:
                     recognized_key = 'unknown'+str(unknown_id)
-                    unknown_id = unknown_id+1
+                    unknown_id = unknown_id + 1
                 else:
                     recognized_key = self.people[identity]
                 recognized_people[recognized_key] = detected_faces[image_id]
