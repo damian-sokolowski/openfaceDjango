@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from openFaceClass import OpenFaceClass
-from webopenface.models import Person, DetectedPeople, Frame
+from webopenface.models import Person, RecognizedPeople, Frame
 
 import json
 
@@ -28,17 +28,11 @@ def on_message(request):
         elif msg['type'] == 'FRAME':
             respons_data = open_face.processFrame(msg['dataURL'], msg['identity'], msg['training'])
         elif msg['type'] == 'GET_FRAME':
-            detected_people = []
             latest_frame = Frame.objects.latest('add_date')
-            published_recently = latest_frame.was_published_recently()
-            for face in latest_frame.detectedface_set.all():
-                for detected_person in face.detectedpeople_set.all():
-                    name = detected_person.person.name if detected_person.person else "Unknown"
-                    detected_people.append([name, detected_person.probability])
             respons_data['type'] = "PREVIEW_FRAME"
             respons_data['dataURL'] = latest_frame.frame
-            respons_data['publishedRecently'] = published_recently
-            respons_data['detectedPeople'] = detected_people
+            respons_data['publishedRecently'] = latest_frame.was_published_recently()
+            respons_data['recognizedPeople'] = open_face.recently_recognized()
         else:
             print("Warning: Unknown message type: {}".format(msg['type']))
 
@@ -48,7 +42,7 @@ def on_message(request):
         request,
         'webopenface/base.html',
         {
-            'preview_list': DetectedPeople.objects.order_by('face__frame__add_date')
+            'preview_list': RecognizedPeople.objects.order_by('face__frame__add_date')
         }
     )
 

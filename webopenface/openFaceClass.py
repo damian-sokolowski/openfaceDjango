@@ -2,7 +2,7 @@ from PIL import Image
 from sklearn.grid_search import GridSearchCV
 from sklearn.svm import SVC
 from threading import Lock
-from webopenface.models import Person, DetectedPeople, PeopleFace, Frame, DetectedFace
+from webopenface.models import Person, RecognizedPeople, PeopleFace, Frame, DetectedFace
 
 import argparse
 import base64
@@ -288,6 +288,6 @@ class OpenFaceClass:
                     person_id = key if isinstance(key, int) else None
                     df = DetectedFace(frame=fr, face=value)
                     df.save()
-                    dp = DetectedPeople(face=df, person_id=person_id, probability=probability)
+                    dp = RecognizedPeople(face=df, person_id=person_id, probability=probability)
                     dp.save()
         return msg

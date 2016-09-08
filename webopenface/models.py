@@ -1,8 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
-from django.utils import timezone
 
-import datetime
+import timeCalculation
 
 
 class Person(models.Model):
@@ -31,10 +30,10 @@ class Frame(models.Model):
     add_date = models.DateTimeField(auto_now_add=True, )
 
     def __unicode__(self):
-        return self.frame
+        return self.frame[0:100]
 
     def was_published_recently(self):
-        return self.add_date >= timezone.now() - datetime.timedelta(minutes=0.5)
+        return self.add_date >= timeCalculation.turn_back_time(0.5)
 
     def save_delete(self):
         objects = Frame.objects.all()
@@ -48,13 +47,14 @@ class DetectedFace(models.Model):
     face = models.TextField()
 
     def __unicode__(self):
-        return self.face
+        return self.face[0:100]
 
 
-class DetectedPeople(models.Model):
+class RecognizedPeople(models.Model):
     face = models.ForeignKey(DetectedFace, )
-    person = models.ForeignKey(Person, null=True)
+    person = models.ForeignKey(Person, null=True, blank=True)
     probability = models.SmallIntegerField(default=0)
+    add_date = models.DateTimeField(auto_now_add=True, )
 
     def __unicode__(self):
-        return self.person.name
+        return str(self.probability)
