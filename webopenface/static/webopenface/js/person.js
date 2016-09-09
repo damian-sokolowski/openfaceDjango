@@ -1,29 +1,52 @@
-$.fn.exists = function(){return this.length != 0};
+/**
+ * Created by damian on 12.09.16.
+ */
+navigator.getUserMedia = navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia;
 
+$.fn.exists = function(){return this.length != 0}
+
+var defaultPerson = null;
+var vid = document.getElementById('videoel'),
+    vidReady = false;
 var people = {}, defaultPerson = -1,
     images = [];
-var videoSourcesList = [];
-var vidReady = false, startedFrameLoop = false;
-var vidWidth, vidHeight;
+
+function getDataURLFromRGB(rgb) {
+    var rgbLen = rgb.length;
+
+    var canvas = $('<canvas/>').width(96).height(96)[0];
+    var ctx = canvas.getContext("2d");
+    var imageData = ctx.createImageData(96, 96);
+    var data = imageData.data;
+    var dLen = data.length;
+    var i = 0, t = 0;
+
+    for (; i < dLen; i +=4) {
+        data[i] = rgb[t+2];
+        data[i+1] = rgb[t+1];
+        data[i+2] = rgb[t];
+        data[i+3] = 255;
+        t += 3;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    return canvas.toDataURL("image/png");
+}
 
 function sendFrameLoop() {
-    var training = $("#trainingChk").prop('checked');
-    if ($('#personPage').exists() && !training) {
+    if (typeof personSite !== 'undefined' && !$("#trainingChk").prop('checked')) {
         return;
     }
     if (vidReady) {
-        startedFrameLoop = true;
-        var videoels = document.getElementById('tab-preview').getElementsByTagName('video');
         var canvas = document.createElement('canvas');
-        canvas.width = vidWidth;
-        canvas.height = vidHeight*videoels.length;
+        canvas.width = vid.width;
+        canvas.height = vid.height;
         var cc = canvas.getContext('2d');
-        for (var i = 0; i < videoels.length; i++){
-            var vid = videoels[i];
-            cc.drawImage(vid, 0, vid.height*(i), vid.width, vid.height);
-        }
-        var dataURL = canvas.toDataURL('image/jpeg');
-
+        cc.drawImage(vid, 0, 0, vid.width, vid.height);
+        var dataURL = canvas.toDataURL('image/jpeg', 0.6);
         $.ajax({
             url: "/openface/api/onmessage/",
             type : "POST",
@@ -31,18 +54,21 @@ function sendFrameLoop() {
             dataType: 'json',
             data: JSON.stringify({
                 type: 'FRAME',
-                dataURL:dataURL,
-                training: training,
-                identity: defaultPerson
+                dataURL: dataURL,
+                training: $("#trainingChk").prop('checked'),
+                identity: defaultPerson,
             }),
 
             success: function (json) {
+
                 if(json['ANNOTATED']){
-                    $("#detectedFacesId").attr('src', json['ANNOTATED']['content']);
+                    $("#detectedFaces").html(
+                        "<img src='" + json['ANNOTATED']['content'] + "' width='430px'>"
+                    )
                 }
 
                 if (json['NEW_IMAGE']) {
-                    var j = json['NEW_IMAGE'];
+                    var j = json['NEW_IMAGE']
                     images.push({
                         hash: j.hash,
                         identity: j.identity,
@@ -54,38 +80,22 @@ function sendFrameLoop() {
                     )
                 }
 
-                // if (json['IDENTITIES']) {
-                //     var identities = json["IDENTITIES"]['identities'];
-                //     var list = $("<ul></ul>");
-                //     var detected_people = $('#detectedPeople div');
-                //     detected_people.html("Last updated: " + (new Date()).toTimeString());
-                //     if (identities.length > 0) {
-                //         $.each(identities, function(index, value){
-                //             list.append("<li>"+value+"</li>")
-                //         });
-                //         detected_people.append(list)
-                //     } else {
-                //         detected_people.append("<p>Nobody detected.</p>");
-                //     }
-                // }
-                if (json['RECOGNIZED']) {
-                    var recognized = json["RECOGNIZED"]['recognized_list'];
-                    var number_of_unknown = json["RECOGNIZED"]['number_of_unknown'];
+                if (json['IDENTITIES']) {
+                    var identities = json["IDENTITIES"]['identities'];
                     var list = $("<ul></ul>");
                     var detected_people = $('#detectedPeople div');
                     detected_people.html("Last updated: " + (new Date()).toTimeString());
-                    if (recognized.length > 0 || number_of_unknown > 0) {
-                        $.each(recognized, function(index, value){
-                            list.append("<li>" + value + "</li>");
+                    if (identities.length > 0) {
+                        $.each(identities, function(index, value){
+                            list.append("<li>"+value+"</li>")
                         });
-                        list.append("<li>Unknown: " + number_of_unknown / videoels.length + "</li>");
-                        detected_people.append(list);
+                        detected_people.append(list)
                     } else {
                         detected_people.append("<p>Nobody detected.</p>");
                     }
                 }
-                getPeopleInfoHtml();
-                sendFrameLoop();
+                getPeopleInfoHtml()
+				sendFrameLoop();
             },
 
             error: function (xhr, errmsg, err) {
@@ -97,8 +107,7 @@ function sendFrameLoop() {
 }
 
 function getPeopleInfoHtml() {
-    var training = $("#trainingChk").prop('checked');
-    if (training){
+    if ($("#trainingChk").prop('checked')){
         var info = {'-1': 0};
         $.each(people, function(index, value) {
             info[index] = 0;
@@ -108,7 +117,7 @@ function getPeopleInfoHtml() {
             info[images[i].identity] += 1;
         }
 
-        var valueMax = $('#progress_bar div').attr('aria-valuemax');
+        var valueMax = $('#progress_bar div').attr('aria-valuemax')
         $('#progress_bar div').width((info[defaultPerson]/valueMax*100)+'%');
         $('#progress_bar span').text(info[defaultPerson]+'/'+valueMax);
 
@@ -118,7 +127,7 @@ function getPeopleInfoHtml() {
         });
         $('#peopleInfo').html(list);
 
-        if (info[defaultPerson] >= valueMax && training) {
+        if (info[defaultPerson] >= valueMax && $("#trainingChk").prop('checked')) {
             $("#trainingChk").bootstrapToggle('off');
             $('#addPersonTxt').prop('readonly', false).val("");
             $('#addPersonBtn').prop('disabled', false);
@@ -138,6 +147,13 @@ function getPeopleInfoHtml() {
             });
         }
     }
+}
+
+function camSuccess(stream){
+    vid.src = (window.URL.createObjectURL(stream)) || stream;
+    vid.play();
+    vidReady = true;
+    sendFrameLoop();
 }
 
 function addPerson(){
@@ -162,7 +178,7 @@ function addPerson(){
                     defaultPerson = json['id'];
                     people[defaultPerson] = newPerson;
 
-                    if ($('#personPage').exists()) {
+                    if (typeof personSite !== 'undefined') {
                         sendFrameLoop();
                     }
                 }
@@ -175,55 +191,22 @@ function addPerson(){
     }
 }
 
-function camSuccess(stream) {
-    var videoElement = document.createElement('video');
-    videoElement.width = vidWidth;
-    videoElement.height = vidHeight;
-    videoElement.src = (window.URL.createObjectURL(stream)) || stream;
-    videoElement.play();
-    document.querySelector('#tab-preview').appendChild(videoElement);
-    vidReady = true;
-    if (!startedFrameLoop) {
-        sendFrameLoop();
-    }
-}
-
-function start() {
-    videoSourcesList.forEach(function(videoSource) {
-        var constraints = {
-            video: {deviceId: videoSource ? {exact: videoSource} : undefined}
-        };
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then(camSuccess)
-            .catch(errorLog);
-    });
-}
-
-function gotDevices(deviceInfos) {
-    deviceInfos.forEach(function(deviceInfo){
-        if (deviceInfo.kind === 'videoinput') {
-            videoSourcesList.push(deviceInfo.deviceId);
-        }
-    });
-    start();
-}
-
-function errorLog(error) {
-    console.log('navigator.getUserMedia error: ', error);
-}
-
 $(document).ready(function(){
     if ( $('#mainPage').exists()) {
-        vidWidth = 800;
-        vidHeight = 600;
-    } else {
-        vidWidth = 400;
-        vidHeight = 300;
+        vid.width = 1282;
+        vid.height = 962;
     }
-
-    navigator.mediaDevices.enumerateDevices()
-        .then(gotDevices)
-        .catch(errorLog);
+    if ( !$('#previewPage').exists()) {
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia({video: true}, camSuccess,
+                function () {
+                    alert('Błąd przechwytywania obrazu z kamery');
+                }
+            )
+        } else {
+            alert('Nie wykryto kamery');
+        }
+    }
 
 	$("#addPersonBtn").click(addPerson);
 });

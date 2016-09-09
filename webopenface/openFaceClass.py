@@ -13,6 +13,7 @@ import openface
 import operator
 import os
 import StringIO
+import timeCalculation
 
 fileDir = os.path.dirname(os.path.realpath(__file__))
 
@@ -152,6 +153,24 @@ class OpenFaceClass:
         if matrix:
             self.findMatching(matrix)
 
+    def recently_recognized(self):
+        last_recognized = RecognizedPeople.objects.filter(add_date__gte=timeCalculation.turn_back_time(0.5))
+        recognized_list = []
+        number_of_unknown = 0
+        for el in last_recognized:
+            if el.person is not None:
+                name = el.person.name
+                if name not in recognized_list:
+                    recognized_list.append(name)# + ": " + str(el.probability))
+            else:
+                number_of_unknown += 1
+        lr_length = last_recognized.count()
+        number_of_unknown = number_of_unknown if lr_length == 0 else (number_of_unknown / lr_length)
+        return {
+            'recognized_list': recognized_list,
+            'number_of_unknown': number_of_unknown
+        }
+
     def processFrame(self, dataURL, identity, training, loadingData=False):
         msg = {}
         detected_faces = {}
@@ -217,7 +236,7 @@ class OpenFaceClass:
                     # content = [str(x) for x in alignedFace.flatten()]
                     msg["NEW_IMAGE"] = {
                         "hash": phash,
-                        "content": base_image,#content,
+                        "content": dataURL,#base_image,#content,
                         "identity": identity,
                         "representation": rep.tolist()
                     }
@@ -241,26 +260,30 @@ class OpenFaceClass:
                 bb = bbs[image_id]
                 identity = value[1]
 
-                # bl = (bb.left(), bb.bottom())
-                # tr = (bb.right(), bb.top())
-                # cv2.rectangle(annotatedFrame, bl, tr, color=(153, 255, 204),
-                #               thickness=3)
+                bl = (bb.left(), bb.bottom())
+                tr = (bb.right(), bb.top())
+                cv2.rectangle(annotatedFrame, bl, tr, color=(153, 255, 204),
+                              thickness=3)
                 # for p in openface.AlignDlib.OUTER_EYES_AND_NOSE:
                 #     cv2.circle(annotatedFrame, center=landmarks[p], radius=3,
                 #                color=(102, 204, 255), thickness=-1)
+
+                probability = int(value[2]*100)
+
                 if identity == -1:
                     if len(self.people) == 1:
                         name = Person.objects.get(pk=self.people[0]).name
                     else:
                         name = "Unknown"
+
+                    identities.append(name + ' - ' + str(probability) + '%')
                 else:
                     name = Person.objects.get(pk=self.people[identity]).name
-                cv2.putText(annotatedFrame, name, (bb.left(), bb.top() - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.75,
-                            color=(152, 255, 204), thickness=2)
+                    identities.insert(0, name+' - '+str(probability)+'%')
+                    cv2.putText(annotatedFrame, name, (bb.left(), bb.top() - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.75,
+                                color=(152, 255, 204), thickness=2)
 
-                probability = int(value[2]*100)
-                identities.append(name+' - '+str(probability)+'%')
                 if -1 == identity:
                     recognized_key = 'unknown'+str(unknown_id)
                     unknown_id = unknown_id + 1
@@ -290,4 +313,6 @@ class OpenFaceClass:
                     df.save()
                     dp = RecognizedPeople(face=df, person_id=person_id, probability=probability)
                     dp.save()
+
+        msg["RECOGNIZED"] = self.recently_recognized()
         return msg
