@@ -63,7 +63,7 @@ function sendFrameLoop() {
 
                 if(json['ANNOTATED']){
                     $("#detectedFaces").html(
-                        "<img src='" + json['ANNOTATED']['content'] + "' width='430px'>"
+                        $("#detectedFacesId").attr('src', json['ANNOTATED']['content'])
                     )
                 }
 
@@ -192,6 +192,7 @@ function addPerson(){
 }
 
 $(document).ready(function(){
+
     if ( $('#mainPage').exists()) {
         vid.width = 1282;
         vid.height = 962;

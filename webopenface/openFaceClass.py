@@ -156,11 +156,13 @@ class OpenFaceClass:
     def recently_recognized(self):
         last_recognized = RecognizedPeople.objects.filter(add_date__gte=timeCalculation.turn_back_time(0.5))
         recognized_list = []
+        number_of_recognized = {}
         number_of_unknown = 0
         for el in last_recognized:
             if el.person is not None:
                 name = el.person.name
-                if name not in recognized_list:
+                number_of_recognized[name] = number_of_recognized[name] + 1 if name in number_of_recognized else 1
+                if name not in recognized_list and number_of_recognized[name] > 1:
                     recognized_list.append(name)# + ": " + str(el.probability))
             else:
                 number_of_unknown += 1

@@ -78,7 +78,7 @@ function sendFrameLoop() {
                         $.each(recognized, function(index, value){
                             list.append("<li>" + value + "</li>");
                         });
-                        list.append("<li>Unknown: " + number_of_unknown / videoels.length + "</li>");
+                        list.append("<li>Unknown: " + Math.round(number_of_unknown / videoels.length) + "</li>");
                         detected_people.append(list);
                     } else {
                         detected_people.append("<p>Nobody detected.</p>");
