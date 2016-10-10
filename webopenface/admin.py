@@ -1,5 +1,5 @@
 from django.contrib import admin
-from webopenface.models import Person, PeopleFace, DetectedPeople, DetectedFace, Frame
+from webopenface.models import Person, PeopleFace, RecognizedPeople, DetectedFace, Frame
 
 
 class PersonAdmin(admin.ModelAdmin):
@@ -8,7 +8,6 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ('name', 'uid', 'mod_date')
     fieldsets = [
         (None,               {'fields': ['uid', 'name']}),
-        ('Date information', {'fields': ['add_date', 'mod_date']}),
     ]
 
 
@@ -16,8 +15,8 @@ class PeopleFaceAdmin(admin.ModelAdmin):
     list_display = ('person', 'face')
 
 
-class DetectedPeopleAdmin(admin.ModelAdmin):
-    list_display = ('person', 'face')
+class RecognizedPeopleAdmin(admin.ModelAdmin):
+    list_display = ('person', 'probability', 'face')
 
 
 class FrameAdmin(admin.ModelAdmin):
@@ -25,8 +24,12 @@ class FrameAdmin(admin.ModelAdmin):
     list_filter = ['add_date']
     list_display = ('frame', 'add_date')
 
+
+class DetectedFaceAdmin(admin.ModelAdmin):
+    list_display = ('face', 'frame')
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(PeopleFace, PeopleFaceAdmin)
-admin.site.register(DetectedPeople, DetectedPeopleAdmin)
-admin.site.register(DetectedFace)
+admin.site.register(RecognizedPeople, RecognizedPeopleAdmin)
+admin.site.register(DetectedFace, DetectedFaceAdmin)
 admin.site.register(Frame, FrameAdmin)

@@ -1,0 +1,22 @@
+{% extends 'webopenface/base.html' %}
+{% block content %}
+    <div class="container">
+        <h2 id="dp-head">Person Image</h2>
+        {% if person %}
+            <h2>{{ person.name }}</h2>
+            <div class="personImage">
+                {% for image in person.peopleface_set.all %}
+                    <img src="{{ image.face }}">
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No person.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+
+{% block staticFile %}
+    {% load staticfiles %}
+    <script src="{% static 'webopenface/js/last-frames.js' %}"></script>
+{% endblock %}

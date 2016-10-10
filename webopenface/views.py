@@ -1,17 +1,66 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from webopenface.models import DetectedPeople, DetectedFace
+from webopenface.models import Person, Frame
 
 
 def index(request):
-    preview_list = DetectedPeople.objects.order_by('face__frame__add_date')
-    output = ', '.join(i.person.name for i in preview_list)
-    return HttpResponse(output)
+    return render(
+        request,
+        'webopenface/index.html',
+        {
+            'added_people': Person.objects.order_by('name')
+        }
+    )
 
 
 def preview(request):
-    return HttpResponse("Hello, world. preview")
+    return render(
+        request,
+        'webopenface/preview.html',
+        {
+            'latest_frame': Frame.objects.latest('add_date')
+        }
+    )
 
 
 def person(request):
-    return HttpResponse("Hello, world. person")
+    return render(request, 'webopenface/person.html')
+
+
+def last_frames(request):
+    return render(
+        request,
+        'webopenface/last_frames.html',
+        {
+            'frames': Frame.objects.order_by('-add_date').all()
+        }
+    )
+
+
+def detected_people(request, pk):
+    return render(
+        request,
+        'webopenface/detected_people.html',
+        {
+            'detected': Frame.objects.get(pk=pk).detectedface_set.all()
+        }
+    )
+
+
+def added_people(request):
+    return render(
+        request,
+        'webopenface/added_people.html',
+        {
+            'people': Person.objects.order_by('-add_date').all()
+        }
+    )
+
+
+def person_details(request, pk):
+    return render(
+        request,
+        'webopenface/person_details.html',
+        {
+            'person': Person.objects.get(pk=pk)
+        }
+    )

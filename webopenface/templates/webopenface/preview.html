@@ -1,0 +1,18 @@
+{% extends 'webopenface/base.html' %}
+
+{% block content %}
+    <div class="container" id="previewPage">
+        <div class="header col-sm-8">
+
+            {% include 'webopenface/video-result.html' %}
+        </div>
+
+        {% include 'webopenface/detected.html' %}
+    </div>
+{% endblock %}
+
+{% block staticFile %}
+    {% load staticfiles %}
+    <script src="{% static 'webopenface/js/preview.js' %}"></script>
+    <script src="{% static 'webopenface/js/main.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'webopenface/base.html' %}
+{% block content %}
+    <div class="container">
+        <h2 id="dp-head">Last Frames</h2>
+        {% if detected %}
+            <table id="table" class="table table-responsive">
+                <thead>
+                    <th>Image</th>
+                    <th>People</th>
+                </thead>
+                <tbody>
+                    {% for person in detected %}
+                        <tr>
+                            <td>
+                                <img src="{{ person.face }}">
+                            </td>
+                            <td>
+                                <ul>
+                                    {% for el in person.detectedpeople_set.all %}
+                                        <li>{{ el.person.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No frame.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+
+{% block staticFile %}
+    {% load staticfiles %}
+{#    <script src="{% static 'webopenface/js/last-frames.js' %}"></script>#}
+{% endblock %}

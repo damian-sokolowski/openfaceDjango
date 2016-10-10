@@ -1,0 +1,16 @@
+<div id="detectedPeople" class="col-sm-4">
+    <h2>Detected people</h2>
+    <div>
+        {% if latest_frame.was_published_recently %}
+            <ul>
+            {% for face in latest_frame.detectedface_set.all %}
+                {% for detected_person in face.detectedpeople_set.all %}
+                    <li>{{ detected_person.person }} - {{ detected_person.probability }}</li>
+                {% endfor %}
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No camera.</p>
+        {% endif %}
+    </div>
+</div>

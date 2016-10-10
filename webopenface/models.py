@@ -1,13 +1,14 @@
 from __future__ import unicode_literals
-
 from django.db import models
+
+import timeCalculation
 
 
 class Person(models.Model):
-    uid = models.CharField(max_length=50, )
+    uid = models.CharField(max_length=50, blank=True)
     name = models.CharField(max_length=50, )
-    add_date = models.DateTimeField(auto_now_add=False, )
-    mod_date = models.DateTimeField(auto_now=False, )
+    add_date = models.DateTimeField(auto_now_add=True, )
+    mod_date = models.DateTimeField(auto_now=True, )
 
     class Meta:
         verbose_name_plural = "people"
@@ -26,10 +27,19 @@ class PeopleFace(models.Model):
 
 class Frame(models.Model):
     frame = models.TextField()
-    add_date = models.DateTimeField(auto_now_add=False, )
+    add_date = models.DateTimeField(auto_now_add=True, )
 
     def __unicode__(self):
-        return self.frame
+        return self.frame[0:100]
+
+    def was_published_recently(self):
+        return self.add_date >= timeCalculation.turn_back_time(0.5)
+
+    def save_delete(self):
+        objects = Frame.objects.all()
+        if objects.count() >= 2000:
+            Frame.objects.filter(id__in=objects[:200]).delete()
+        self.save()
 
 
 class DetectedFace(models.Model):
@@ -37,12 +47,14 @@ class DetectedFace(models.Model):
     face = models.TextField()
 
     def __unicode__(self):
-        return self.face
+        return self.face[0:100]
 
 
-class DetectedPeople(models.Model):
+class RecognizedPeople(models.Model):
     face = models.ForeignKey(DetectedFace, )
-    person = models.ForeignKey(Person, )
+    person = models.ForeignKey(Person, null=True, blank=True)
+    probability = models.SmallIntegerField(default=0)
+    add_date = models.DateTimeField(auto_now_add=True, )
 
     def __unicode__(self):
-        return self.person.name
+        return str(self.probability)

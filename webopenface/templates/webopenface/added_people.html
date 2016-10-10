@@ -1,0 +1,40 @@
+{% extends 'webopenface/base.html' %}
+{% block content %}
+    <div class="container">
+        <h2 id="lf-head">Added People</h2>
+        {% if people %}
+            <table id="table" class="display">
+                <thead>
+                    <th> </th>
+                    <th>PK</th>
+                    <th>Name</th>
+                    <th>Uid</th>
+                    <th>Added date</th>
+                    <th>Mod date</th>
+                </thead>
+                <tbody>
+                    {% for person in people %}
+                        <tr>
+                            <td> {{ forloop.counter }}</td>
+                            <td class="pk">{{ person.id }}</td>
+                            <td>{{ person.name }}</td>
+                            <td>{{ person.detectedface_set.count }}</td>
+                            <td>{{ person.add_date }}</td>
+                            <td>{{ person.mod_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No people.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+
+{% block staticFile %}
+    {% load staticfiles %}
+    <script src="{% static 'webopenface/js/added-people.js' %}"></script>
+    <script src="{% static 'webopenface/js/jquery.dataTables.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'webopenface/css/jquery.dataTables.min.css' %}" />
+{% endblock %}
